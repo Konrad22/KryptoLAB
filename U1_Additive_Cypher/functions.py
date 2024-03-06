@@ -11,6 +11,12 @@ def write(filename, text):
     f.write(text)
     f.close()
 
+def additive_chiffre_text_k(text, key):
+    e_text = ""
+    for l in text:
+        e_text += additive_chiffre_letter_k(l,key)
+    return e_text
+
 def encrypt_additive_chiffre_text_k(text, key):
     e_text = ""
     for l in text:
