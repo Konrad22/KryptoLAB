@@ -10,3 +10,9 @@ def main():
     func.write(output, f)
 
 main()
+
+#Programm zum Verschlüsseln mit bekanntem Schlüssel
+#Ausführen des Programms wie gefordert:
+#Kommandozeile:  [input.txt] [Schlüssel] [output.txt]
+#Test Korrektheit: Kryptotext_TAG TAG Klartext_Tag
+#mit Klartext_1 verglichen

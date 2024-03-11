@@ -41,4 +41,8 @@ def main():
 
 main()
 
-#gibt zu großen Schlüssel aus, wie am besten den kleinsten nenner finden
+#Programm zum Entschlüsseln ohne bekanntem Schlüssel
+#Ausführen des Programms wie gefordert:
+#Kommandozeile:  [input.txt] [output.txt]
+#Test Korrektheit: Kryptotext_TAG Klartext_TAG_auto
+#Ausgabe enthält korrekten Schlüssel, und mit Klartext_1 identischen Text
