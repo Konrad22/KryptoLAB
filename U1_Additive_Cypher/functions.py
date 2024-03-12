@@ -1,71 +1,69 @@
 import sys
 
+#opens file <filename>, reads text of the file into a variable, closes file, returns variable
 def read(filename):
     f = open(filename, "r")
     t = f.read()
     f.close()
     return t
-    #Datei öffnen, Text in der Datei als Variable einleisen, Datei schließen
 
+#opens file <filename>, writes text <text> into the file, closes file
 def write(filename, text):
     f = open(filename, "w")
     f.write(text)
     f.close()
-    #Datei öffnen, Inhalt der Variable in die Datei schreiben, Datei schließen
 
-def encrypt_additive_chiffre_text_k(text, key):
+#encrypts a text <text> with a key <key> using the additive cypher
+def encrypt_additive_cypher_text_k(text, key):
     e_text = ""
     for l in text:
-        e_text += additive_chiffre_letter_k(l,key)
-        #verschlüsselter Text aus den einzeln verschlüsselten Buchstaben zusammengesetzt
+        e_text += additive_cypher_letter_k(l,key)
     return e_text
-    #verschlüsseln eines Textes mit Additiver Chiffre für Schlüssel k
 
-def decrypt_additive_chiffre_text_k(text, key):
+#decrypts a text <text> with a key <key> using the additive cypher
+def decrypt_additive_cypher_text_k(text, key):
     e_text = ""
     for l in text:
-        e_text += additive_chiffre_letter_k(l,-key)
-        #entschlüsselter Text aus den einzeln entschlüsselten Buchstaben zusammengesetzt
+        e_text += additive_cypher_letter_k(l,-key)
     return e_text
-    #entschlüsseln eines Textes mit Additiver Chiffre für Schlüssel k  
-
-def additive_chiffre_letter_k(letter, key):
+ 
+#encrypts a letter <letter> with a key <key> using the additive cypher
+def additive_cypher_letter_k(letter, key):
     if(ord(letter)> 64 and ord(letter) < 91):
         letter = transform_number_to_letter((transform_letter_to_number(letter) + key)%26)
     return letter
-#nimmt einen Buchstaben des erlaubten Alphabets, und verschlüsselt ihn mit Additiver Chiffre für Schlüssel k
 
+#transforms the letters of the used alphabet (A-Z) into the numbers 0-25
 def transform_letter_to_number(letter):
     n = ord(letter)
     return n-65
-#ordnet den Buchstaben A-Z die Zahlen 0-25 zu, damit es intuitiver ist
 
+#transforms the numbers 0-25 into the letters of the used alphabet (A-Z)
 def transform_number_to_letter(number):
     n = number + 65
     return chr(n)
-#transformiert die Zahlen 0-25 wieder zu den Buchstaben A-Z
 
+#counts the frequency of each letter A-Z in a given text
 def count_letters(text:str):
     list = []
     for i in range(26):
         list.append(text.count(chr(i + 65)))
-        #zählt wie oft alle Buchstaben jeweils in einem Text vorkommen
     return list
 
+#returns the index of the biggest element in a given list
 def most_common_letter(list):
     return list.index(max(list))
-#gibt den Index des größten Elements der Liste aus
 
+#calculates the difference between two numbers modulo 26
 def calculate_key(index, common_letter):
     key = (index - (ord(common_letter)-65)) % 26
-    #gibt aus wie groß der Abstand zwischen der Zahl index und der Zahlrepräsentation des gegeben Wortes ist
     return key
 
+#applies frequency analysis on a text to return the key used to encrypt it with additive cypher
 def frequency_analysis(text):
     common_letter = 'E'
     frequency_letters = count_letters(text)
     index_most_common_letter = most_common_letter(frequency_letters)
     key = calculate_key(index_most_common_letter, common_letter)
     return key
-#Frequency analysis mit den vorherigen drei Bausteinen
 
