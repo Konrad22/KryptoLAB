@@ -20,6 +20,7 @@ def write(filename, text):
 def encrypt_AES_128_bitblock(plaintext, key_list):
     text = AddRoundKey(plaintext, key_list[0])
     for i in range(1, 10):
+    #for i in range(1, 2):
         text = SubBytes(text)
         text = ShiftRows(text)
         text = MixColumns(text)
@@ -27,24 +28,7 @@ def encrypt_AES_128_bitblock(plaintext, key_list):
     text = SubBytes(text)
     text = ShiftRows(text)
     cypher_text = AddRoundKey(text, key_list[10])
-    return cypher_text
-
-#encrypts a 128 bitblock of plaintext using AES cypher
-#input is the bitblock and the 11 roundkeys (also 128 bitblocks)    
-#returns an encrypted 128 bitblock
-#function 'prepare_text_and_key' needs to be called ahead of time
-def encrypt_AES_128_bitblock(plaintext, key_list):
-    print(plaintext, key_list)
-    text = AddRoundKey(plaintext, key_list[0])
-    for i in range(1, 10):
-        text = SubBytes(text)
-        text = ShiftRows(text)
-        text = MixColumns(text)
-        text = AddRoundKey(text, key_list[i])
-    text = SubBytes(text)
-    text = ShiftRows(text)
-    cypher_text = AddRoundKey(text, key_list[10])
-    return cypher_text
+    return ' '.join(int_list_to_hex(cypher_text))
 
 #decrypts a 128 bitblock of cyphertext using AES cypher
 #input is the bitblock and the 11 roundkeys (also 128 bitblocks)    
@@ -55,12 +39,14 @@ def decrypt_AES_128_bitblock(cyphertext, key_list):
     text = ShiftRowsInvers(text)
     text = SubBytesInvers(text)
     for i in range(1, 10):
+    #for i in range(1, 2):
         text = AddRoundKey(text, key_list[10-i])
         text = MixColumnsInvers(text)
         text = ShiftRowsInvers(text)
         text = SubBytesInvers(text)
     plain_text = AddRoundKey(text, key_list[0])
-    return plain_text
+    return ' '.join(int_list_to_hex(plain_text))
+    
     
 #transform input byteblock into bytelist
 def transform_byteblock_into_bytelist(filename):
@@ -68,17 +54,31 @@ def transform_byteblock_into_bytelist(filename):
     byte_list = t.split()
     return byte_list
 
-#transforms byte into integer representation
+#transforms hex into integer representation
 def hex_to_int(hex_number):
     int_number = int(hex_number,16)
     return int_number
 
-#transform list of bytes into list of integer
+#transform list of hex number into list of integer
 def hex_list_to_int(hex_list):
-    int_list =[None]*len(hex_list)
+    int_list = [None]*len(hex_list)
     for hex in range(len(hex_list)):
         int_list[hex] = hex_to_int(hex_list[hex])
     return int_list
+
+#transforms int into hex representation
+def int_to_hex(int_number):
+    hex_number = hex(int_number).lstrip("0x")
+    if int_number < 16:
+        hex_number = '0' + hex_number
+    return hex_number
+
+#transform list of integer into list of hex numbers
+def int_list_to_hex(int_list):
+    hex_list = [None]*len(int_list)
+    for int in range(len(int_list)):
+        hex_list[int] = int_to_hex(int_list[int])
+    return hex_list
 
 #transforms text bytes and key bytes into lists of integer
 def prepare_text_and_key(textfile, keysfile):
@@ -101,40 +101,43 @@ def prepare_SBox_and_SBoxInvers(SBoxfile, SBoxInversfile):
 
 #XORs two list of integers elementwise
 def AddRoundKey(byte_list, key_list):
+    byte_list_key = [None]*len(byte_list)
     for byte in range(len(byte_list)):
-        byte_list[byte] = byte_list[byte] ^ key_list[byte]
-    return byte_list
+        byte_list_key[byte] = byte_list[byte] ^ key_list[byte]
+    return byte_list_key
 
 #substitutes the integers in <byte_list> with integers of the SBox
 def SubBytes(byte_list):
+    byte_list_mod = [None]*len(byte_list)
     SBox_list = transform_byteblock_into_bytelist('SBox.txt')
     SBox_list = hex_list_to_int(SBox_list)
     for integer in range(len(byte_list)):
-        byte_list[integer] = SBox_list[byte_list[integer]]
-    return byte_list
+        byte_list_mod[integer] = SBox_list[byte_list[integer]]
+    return byte_list_mod
 
 #substitutes the integers in <byte_list> with integers of the SBoxInvers
 def SubBytesInvers(byte_list):
+    byte_list_mod = [None]*len(byte_list)
     SBoXInvers_list = transform_byteblock_into_bytelist('SBoxInvers.txt')
     SBoXInvers_list = hex_list_to_int(SBoXInvers_list)
-    for integer in byte_list:
-        byte_list[integer] = SBoXInvers_list[byte_list[integer]]
-    return byte_list
+    for integer in range(len(byte_list)):
+        byte_list_mod[integer] = SBoXInvers_list[byte_list[integer]]
+    return byte_list_mod
 
 #pretends that the list is a 4x4 array and leftshifts all elements of the list depending
 #on what row they are in, 0th row by 0, 1st row by 1, 2th row by 2, 3rd row by 3
 def ShiftRows(byte_list):
     shifted_byte_list = [None]*len(byte_list)
-    for byte in byte_list:
+    for byte in range(len(byte_list)):
         shift = byte % 4
-        shifted_byte_list[byte] =  byte_list[byte-4*shift]
+        shifted_byte_list[byte-4*shift] =  byte_list[byte]
     return shifted_byte_list
 
 #pretends that the list is a 4x4 array and rightshifts all elements of the list depending
 #on what row they are in, 0th row by 0, 1st row by 1, 2th row by 2, 3rd row by 3
 def ShiftRowsInvers(byte_list):
     shifted_byte_list = [None]*len(byte_list)
-    for byte in byte_list:
+    for byte in range(len(byte_list)):
         shift = byte % 4
         shifted_byte_list[byte] =  byte_list[byte-4*shift]
     return shifted_byte_list
@@ -143,20 +146,20 @@ def ShiftRowsInvers(byte_list):
 def MixColumns(byte_list):
     mixed_byte_list = [None] * len(byte_list) 
     for i in range(4):
-        mixed_byte_list[0 + i*4] = russian_multiplication_initialise(2, byte_list[0 + i*4]) + russian_multiplication_initialise(3, byte_list[1 + i*4]) + byte_list[2 + i*4] + byte_list[3 + i*4]
-        mixed_byte_list[1 + i*4] = russian_multiplication_initialise(2, byte_list[1 + i*4]) + russian_multiplication_initialise(3, byte_list[2 + i*4]) + byte_list[3 + i*4] + byte_list[0 + i*4]
-        mixed_byte_list[2 + i*4] = russian_multiplication_initialise(2, byte_list[2 + i*4]) + russian_multiplication_initialise(3, byte_list[3 + i*4]) + byte_list[0 + i*4] + byte_list[1 + i*4]
-        mixed_byte_list[3 + i*4] = russian_multiplication_initialise(2, byte_list[3 + i*4]) + russian_multiplication_initialise(3, byte_list[0 + i*4]) + byte_list[1 + i*4] + byte_list[2 + i*4]
+        mixed_byte_list[0 + i*4] = russian_multiplication_initialise(2, byte_list[0 + i*4]) ^ russian_multiplication_initialise(3, byte_list[1 + i*4]) ^ byte_list[2 + i*4] ^ byte_list[3 + i*4]
+        mixed_byte_list[1 + i*4] = russian_multiplication_initialise(2, byte_list[1 + i*4]) ^ russian_multiplication_initialise(3, byte_list[2 + i*4]) ^ byte_list[3 + i*4] ^ byte_list[0 + i*4]
+        mixed_byte_list[2 + i*4] = russian_multiplication_initialise(2, byte_list[2 + i*4]) ^ russian_multiplication_initialise(3, byte_list[3 + i*4]) ^ byte_list[0 + i*4] ^ byte_list[1 + i*4]
+        mixed_byte_list[3 + i*4] = russian_multiplication_initialise(2, byte_list[3 + i*4]) ^ russian_multiplication_initialise(3, byte_list[0 + i*4]) ^ byte_list[1 + i*4] ^ byte_list[2 + i*4]
     return mixed_byte_list
 
 #mixes columns according to AES decryption standard
 def MixColumnsInvers(byte_list):
     mixed_byte_list = [None] * len(byte_list) 
     for i in range(4):
-        mixed_byte_list[0 + i*4] = russian_multiplication_initialise(14, byte_list[0 + i*4]) + russian_multiplication_initialise(14, byte_list[1 + i*4]) + russian_multiplication_initialise(14, byte_list[2 + i*4]) + russian_multiplication_initialise(14, byte_list[3 + i*4])
-        mixed_byte_list[1 + i*4] = russian_multiplication_initialise(9, byte_list[1 + i*4]) + russian_multiplication_initialise(11, byte_list[2 + i*4]) + russian_multiplication_initialise(11, byte_list[3 + i*4]) + russian_multiplication_initialise(11, byte_list[0 + i*4])
-        mixed_byte_list[2 + i*4] = russian_multiplication_initialise(13, byte_list[2 + i*4]) + russian_multiplication_initialise(13, byte_list[3 + i*4]) + russian_multiplication_initialise(13, byte_list[0 + i*4]) + russian_multiplication_initialise(13, byte_list[1 + i*4])
-        mixed_byte_list[3 + i*4] = russian_multiplication_initialise(11, byte_list[3 + i*4]) + russian_multiplication_initialise(9, byte_list[0 + i*4]) + russian_multiplication_initialise(9, byte_list[1 + i*4]) + russian_multiplication_initialise(9, byte_list[2 + i*4])
+        mixed_byte_list[0 + i*4] = russian_multiplication_initialise(14, byte_list[0 + i*4]) ^ russian_multiplication_initialise(11, byte_list[1 + i*4]) ^ russian_multiplication_initialise(13, byte_list[2 + i*4]) ^ russian_multiplication_initialise(9, byte_list[3 + i*4])
+        mixed_byte_list[1 + i*4] = russian_multiplication_initialise(14, byte_list[1 + i*4]) ^ russian_multiplication_initialise(11, byte_list[2 + i*4]) ^ russian_multiplication_initialise(13, byte_list[3 + i*4]) ^ russian_multiplication_initialise(9, byte_list[0 + i*4])
+        mixed_byte_list[2 + i*4] = russian_multiplication_initialise(14, byte_list[2 + i*4]) ^ russian_multiplication_initialise(11, byte_list[3 + i*4]) ^ russian_multiplication_initialise(13, byte_list[0 + i*4]) ^ russian_multiplication_initialise(9, byte_list[1 + i*4])
+        mixed_byte_list[3 + i*4] = russian_multiplication_initialise(14, byte_list[3 + i*4]) ^ russian_multiplication_initialise(11, byte_list[0 + i*4]) ^ russian_multiplication_initialise(13, byte_list[1 + i*4]) ^ russian_multiplication_initialise(9, byte_list[2 + i*4])
     return mixed_byte_list
 
 #double a given binary number smaller than 11111111
@@ -164,7 +167,7 @@ def double_function(number):
     binary_number = bin(number)[2:].zfill(8)
     t = (number << 1) % 256
     if binary_number[0] == '1':
-        t = t ^ 1
+        t = t ^ 27
     return t
 
 #returns 0 if one of the multiplicants is 0, otherwise calls a recursive funtions and hands the initalised result and the multiplicants
@@ -184,44 +187,3 @@ def russian_multiplication_calculation(multiplicant_1, multiplicant_2, result):
     if multiplicant_1 % 2 == 1:
         result = result ^ multiplicant_2
     return russian_multiplication_calculation(multiplicant_1//2, double_function(multiplicant_2), result)
-
-
-
-
-
-def xor(a:str, b:str) -> str:
-    return ''.join('0' if a[i] == b[i] else '1' for i in range(len(a)))
-
-def addGalois(a: str, b:str):
-    return xor(a, b)
-
-# doubles an 8-bit binary string in galois field
-def doubleGalois(a: str):
-    t = a[1:8] + "0"
-    if a[0] == '1':
-        t = xor(t, '00000001')
-    return t
-
-# multiplies 2 8-bit binary strings in galois field
-def mulGalois(a: str, b:int):   
-    listLeft = []
-    listRight = []
-    
-    #init lists
-    while b > 1:
-        listLeft.append(b)
-        listRight.append(a)
-        b = b // 2
-        a = doubleGalois(a)
-    listLeft.append(b)
-    listRight.append(a)
-    
-    #take sum if left not even
-    sum = "00000000"
-    for i in range(len(listRight)):
-        if listLeft[i] % 2 != 0:
-            sum = addGalois(sum,listRight[i])
-    return sum
-
-#print(russian_multiplication_initialise(6,245))
-#print(mulGalois('00000110', 245))
