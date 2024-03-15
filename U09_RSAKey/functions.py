@@ -52,10 +52,10 @@ def miller_rabin(n):
     m, k = find_m_k(n)
     a = random.randrange(2, n)
     b = power_mod(a, m, n)
-    if b%n == 1:
+    if b == 1 % n:
         return True
     for i in range(k):
-        if (b%n) == (n-1):
+        if b == -1 % n:
             return True
         else:
             b = power_mod(b, 2, n)
@@ -68,13 +68,13 @@ def miller_rabin_multiple(x, times):
             return False
     return True
 
-#finds m, k such that n - 1 = 2^k * m
+#finds m, k such that n - 1 = 2**k * m
 def find_m_k(n):
     m = (n - 1) // 2
     k = 1
     while m % 2 == 0:
-        m //= 2
-        k += 1
+        m = m // 2
+        k = k + 1
     return int(m), k
 
 #generates a key pair for RSA and also returns the primes used
@@ -87,7 +87,7 @@ def key_gen_RSA(keylength):
     while not ggT_extended(e, phi_n):
         e = random.randrange(q//2, 8*q)
     d = ggT_extended(e, phi_n)[1] % n
-    keys = [[e, n], [d, n]] 
+    keys = [(e, n), (d, n)] 
     return keys, p, q
 
 #calculates phi(p*q) for p and q being prime
@@ -102,7 +102,7 @@ def ggT_extended(a, b):
     t = [0, 1]
     while not r[k + 1] == 0:
         k = k + 1
-        q = r[k-1]/r[k]
+        q = r[k-1]//r[k]
         r.append(r[k-1] - q * r[k])
         s.append(s[k-1] - q * s[k])
         t.append(t[k-1] - q * t[k])
