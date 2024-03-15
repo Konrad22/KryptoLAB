@@ -28,10 +28,6 @@ def main():
         count_divisors[likely_key_length - 1] = 0
         likely_key_length = count_divisors.index(max(count_divisors)) + 1
 
-    #print(likely_key_lengths)
-
-    #print(likely_key_length)
-    #Häufigkeitsanalyse gibt falschen Schlüssel aus, am Donnerstag schauen ob richtig geschrieben
     list_text_partition_by_key = func.partition_text(f, likely_key_length)
     for text_part in list_text_partition_by_key:
         k_part = func.frequency_analysis(text_part)
